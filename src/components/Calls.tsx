@@ -127,22 +127,22 @@ export const Calls = ({ onBack }: CallsProps) => {
 
   return (
     <div className="flex h-screen bg-background">
-      <div className="w-full max-w-4xl mx-auto flex flex-col">
-        <div className="p-4 border-b border-border">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
+      <div className="w-full max-w-4xl mx-auto flex flex-col min-w-0">
+        <div className="p-3 md:p-4 border-b border-border">
+          <div className="flex items-center justify-between mb-3 md:mb-4">
+            <div className="flex items-center gap-2 md:gap-3"}
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onBack}
-                className="rounded-full"
+                className="rounded-full h-9 w-9 md:h-10 md:w-10"
               >
-                <Icon name="ArrowLeft" size={20} />
+                <Icon name="ArrowLeft" size={18} className="md:w-5 md:h-5" />
               </Button>
-              <h1 className="text-2xl font-bold">Звонки</h1>
+              <h1 className="text-xl md:text-2xl font-bold">Звонки</h1>
             </div>
-            <Button size="icon" variant="ghost" className="rounded-full hover:bg-primary/10">
-              <Icon name="Plus" size={20} />
+            <Button size="icon" variant="ghost" className="rounded-full hover:bg-primary/10 h-9 w-9 md:h-10 md:w-10">
+              <Icon name="Plus" size={18} className="md:w-5 md:h-5" />
             </Button>
           </div>
           
@@ -152,7 +152,7 @@ export const Calls = ({ onBack }: CallsProps) => {
               placeholder="Поиск контактов..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-2 focus:border-primary transition-all"
+              className="pl-10 rounded-full border-2 focus:border-primary transition-all text-sm md:text-base"
             />
           </div>
         </div>
@@ -164,29 +164,29 @@ export const Calls = ({ onBack }: CallsProps) => {
           </TabsList>
 
           <ScrollArea className="flex-1">
-            <div className="p-4 space-y-2">
+            <div className="p-2 md:p-4 space-y-1 md:space-y-2">
               {filteredCalls.map((call) => (
                 <div
                   key={call.id}
-                  className="flex items-center gap-4 p-3 rounded-2xl hover:bg-muted/50 transition-all"
+                  className="flex items-center gap-2 md:gap-4 p-2 md:p-3 rounded-xl md:rounded-2xl hover:bg-muted/50 transition-all">
                 >
-                  <Avatar className="w-14 h-14">
+                  <Avatar className="w-12 h-12 md:w-14 md:h-14">
                     <AvatarImage src={call.avatar} />
-                    <AvatarFallback className="gradient-secondary text-white font-semibold">
+                    <AvatarFallback className="gradient-secondary text-white font-semibold text-sm md:text-base">
                       {call.name.split(' ').map(n => n[0]).join('')}
                     </AvatarFallback>
                   </Avatar>
                   
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold truncate">{call.name}</h3>
+                    <div className="flex items-center gap-1.5 md:gap-2 mb-0.5 md:mb-1">
+                      <h3 className="font-semibold truncate text-sm md:text-base">{call.name}</h3>
                       <Icon 
                         name={call.callType === 'video' ? 'Video' : 'Phone'} 
                         size={14} 
                         className="text-muted-foreground" 
                       />
                     </div>
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5 md:gap-2 text-xs md:text-sm text-muted-foreground">
                       <Icon 
                         name={getCallIcon(call.type)} 
                         size={14} 
@@ -197,22 +197,22 @@ export const Calls = ({ onBack }: CallsProps) => {
                     </div>
                   </div>
                   
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 md:gap-2">
                     <Button
                       size="icon"
                       variant="ghost"
                       onClick={() => startCall(call, false)}
-                      className="rounded-full hover:bg-green-500/10 text-green-500"
+                      className="rounded-full hover:bg-green-500/10 text-green-500 h-8 w-8 md:h-10 md:w-10"
                     >
-                      <Icon name="Phone" size={20} />
+                      <Icon name="Phone" size={16} className="md:w-5 md:h-5" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
                       onClick={() => startCall(call, true)}
-                      className="rounded-full hover:bg-blue-500/10 text-blue-500"
+                      className="rounded-full hover:bg-blue-500/10 text-blue-500 h-8 w-8 md:h-10 md:w-10"
                     >
-                      <Icon name="Video" size={20} />
+                      <Icon name="Video" size={16} className="md:w-5 md:h-5" />
                     </Button>
                   </div>
                 </div>

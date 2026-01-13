@@ -52,19 +52,19 @@ export const Bots = ({ onBack }: BotsProps) => {
 
   return (
     <div className="flex h-screen bg-background">
-      <div className="w-full max-w-6xl mx-auto flex flex-col">
-        <div className="p-4 border-b border-border">
+      <div className="w-full max-w-6xl mx-auto flex flex-col min-w-0">
+        <div className="p-3 md:p-4 border-b border-border">
           <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 md:gap-3">
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={onBack}
-                className="rounded-full"
+                className="rounded-full h-9 w-9 md:h-10 md:w-10"
               >
-                <Icon name="ArrowLeft" size={20} />
+                <Icon name="ArrowLeft" size={18} className="md:w-5 md:h-5" />
               </Button>
-              <h1 className="text-2xl font-bold">Боты</h1>
+              <h1 className="text-xl md:text-2xl font-bold">Боты</h1>
             </div>
           </div>
           
@@ -74,20 +74,20 @@ export const Bots = ({ onBack }: BotsProps) => {
               placeholder="Поиск ботов..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 rounded-full border-2 focus:border-primary transition-all"
+              className="pl-10 rounded-full border-2 focus:border-primary transition-all text-sm md:text-base"
             />
           </div>
         </div>
 
         <ScrollArea className="flex-1">
-          <div className="p-4">
-            <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+          <div className="p-3 md:p-4">
+            <div className="flex gap-1.5 md:gap-2 mb-4 md:mb-6 overflow-x-auto pb-2">
               {categories.map((category) => (
                 <Button
                   key={category.id}
                   variant={selectedCategory === category.id ? 'default' : 'outline'}
                   onClick={() => setSelectedCategory(category.id)}
-                  className={`rounded-full whitespace-nowrap ${
+                  className={`rounded-full whitespace-nowrap text-xs md:text-sm h-9 md:h-10 px-3 md:px-4 ${
                     selectedCategory === category.id 
                       ? 'gradient-primary text-white' 
                       : ''
