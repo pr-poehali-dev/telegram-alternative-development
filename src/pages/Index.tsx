@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Textarea } from '@/components/ui/textarea';
+import { useTheme } from '@/lib/theme-provider';
 
 interface Chat {
   id: number;
@@ -51,6 +52,7 @@ interface User {
 }
 
 const Index = () => {
+  const { theme, setTheme } = useTheme();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; isPremium: boolean } | null>(null);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
@@ -66,6 +68,8 @@ const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  
+  const isDarkMode = theme === 'dark';
   
   const [chats, setChats] = useState<Chat[]>([
     { id: 1, name: 'Алексей Смирнов', avatar: '', lastMessage: 'Отлично, встречаемся завтра!', time: '14:32', unread: 2, online: true, type: 'personal', pinned: true },
@@ -344,6 +348,15 @@ const Index = () => {
           </Button>
         </div>
         
+        <Button
+          variant="ghost"
+          size="icon"
+          className="text-white hover:bg-white/20 rounded-2xl w-14 h-14"
+          onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
+        >
+          <Icon name={isDarkMode ? "Sun" : "Moon"} size={24} />
+        </Button>
+        
         <Avatar 
           className="w-12 h-12 ring-2 ring-white/30 cursor-pointer hover:ring-white/50 transition-all"
           onClick={() => setActiveTab('settings')}
@@ -371,6 +384,15 @@ const Index = () => {
               <h2 className="text-xl md:text-2xl font-bold">Чаты</h2>
             </div>
             <div className="flex gap-1 md:gap-2">
+              <Button 
+                size="icon" 
+                variant="ghost" 
+                className="rounded-full hover:gradient-primary hover:text-white transition-all h-9 w-9 md:h-10 md:w-10 md:hidden"
+                onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
+                title={isDarkMode ? 'Светлая тема' : 'Темная тема'}
+              >
+                <Icon name={isDarkMode ? "Sun" : "Moon"} size={18} />
+              </Button>
               <Button 
                 size="icon" 
                 variant="ghost" 
@@ -930,6 +952,17 @@ const Index = () => {
             >
               <Icon name="Settings" size={18} className="mr-2" />
               Настройки
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-between rounded-xl"
+              onClick={() => setTheme(isDarkMode ? 'light' : 'dark')}
+            >
+              <span className="flex items-center">
+                <Icon name={isDarkMode ? "Moon" : "Sun"} size={18} className="mr-2" />
+                {isDarkMode ? 'Темная тема' : 'Светлая тема'}
+              </span>
+              <Icon name={isDarkMode ? "Sun" : "Moon"} size={16} className="text-muted-foreground" />
             </Button>
             {user.isPremium && (
               <div className="p-3 rounded-xl gradient-primary text-white text-center">

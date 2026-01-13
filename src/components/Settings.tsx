@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
+import { useTheme } from '@/lib/theme-provider';
 
 interface SettingsProps {
   user: { name: string; email: string; isPremium: boolean };
@@ -18,10 +19,12 @@ interface SettingsProps {
 }
 
 export const Settings = ({ user, onBack, onLogout, onUpgradePremium }: SettingsProps) => {
+  const { theme, setTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
-  const [darkMode, setDarkMode] = useState(false);
   const [autoDownload, setAutoDownload] = useState(true);
+  
+  const isDarkMode = theme === 'dark';
 
   return (
     <div className="flex h-screen bg-background">
@@ -177,18 +180,28 @@ export const Settings = ({ user, onBack, onLogout, onUpgradePremium }: SettingsP
             <Card>
               <CardHeader>
                 <CardTitle>Внешний вид</CardTitle>
+                <CardDescription className="text-xs md:text-sm">Настройте внешний вид приложения</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <div>
-                    <Label htmlFor="dark" className="text-sm md:text-base">Темная тема</Label>
-                    <p className="text-xs md:text-sm text-muted-foreground">Включить темный режим</p>
+                  <div className="flex-1">
+                    <Label htmlFor="dark" className="text-sm md:text-base flex items-center gap-2">
+                      <Icon name={isDarkMode ? "Moon" : "Sun"} size={16} className="text-primary" />
+                      Темная тема
+                    </Label>
+                    <p className="text-xs md:text-sm text-muted-foreground mt-1">
+                      {isDarkMode ? 'Включена темная тема' : 'Включена светлая тема'}
+                    </p>
                   </div>
                   <Switch
                     id="dark"
-                    checked={darkMode}
-                    onCheckedChange={setDarkMode}
+                    checked={isDarkMode}
+                    onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
                   />
+                </div>
+                <div className="p-3 rounded-xl bg-muted/50 text-xs md:text-sm text-muted-foreground">
+                  <Icon name="Info" size={14} className="inline mr-1.5" />
+                  Тема сохраняется автоматически
                 </div>
               </CardContent>
             </Card>
