@@ -6,6 +6,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Auth } from '@/components/Auth';
+import { Settings } from '@/components/Settings';
+import { Calls } from '@/components/Calls';
+import { Bots } from '@/components/Bots';
 
 interface Chat {
   id: number;
@@ -27,6 +31,8 @@ interface Message {
 }
 
 const Index = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<{ name: string; email: string; isPremium: boolean } | null>(null);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messageText, setMessageText] = useState('');
   const [activeTab, setActiveTab] = useState('chats');
@@ -123,6 +129,47 @@ const Index = () => {
     }
   };
 
+  const handleLogin = (name: string, email: string) => {
+    setUser({ name, email, isPremium: false });
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setUser(null);
+    setSelectedChat(null);
+    setActiveTab('chats');
+  };
+
+  const handleUpgradePremium = () => {
+    if (user) {
+      setUser({ ...user, isPremium: true });
+    }
+  };
+
+  if (!isAuthenticated || !user) {
+    return <Auth onLogin={handleLogin} />;
+  }
+
+  if (activeTab === 'settings') {
+    return (
+      <Settings 
+        user={user} 
+        onBack={() => setActiveTab('chats')} 
+        onLogout={handleLogout}
+        onUpgradePremium={handleUpgradePremium}
+      />
+    );
+  }
+
+  if (activeTab === 'calls') {
+    return <Calls onBack={() => setActiveTab('chats')} />;
+  }
+
+  if (activeTab === 'bots') {
+    return <Bots onBack={() => setActiveTab('chats')} />;
+  }
+
   return (
     <div className="flex h-screen bg-background overflow-hidden">
       <div className="w-20 gradient-primary flex flex-col items-center py-6 space-y-6">
@@ -168,9 +215,14 @@ const Index = () => {
           </Button>
         </div>
         
-        <Avatar className="w-12 h-12 ring-2 ring-white/30 cursor-pointer hover:ring-white/50 transition-all">
+        <Avatar 
+          className="w-12 h-12 ring-2 ring-white/30 cursor-pointer hover:ring-white/50 transition-all"
+          onClick={() => setActiveTab('settings')}
+        >
           <AvatarImage src="" />
-          <AvatarFallback className="gradient-accent text-white font-semibold">ВЫ</AvatarFallback>
+          <AvatarFallback className="gradient-accent text-white font-semibold">
+            {user.name.split(' ').map(n => n[0]).join('')}
+          </AvatarFallback>
         </Avatar>
       </div>
 
