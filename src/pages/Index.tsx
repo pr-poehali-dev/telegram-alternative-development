@@ -30,28 +30,96 @@ const Index = () => {
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
   const [messageText, setMessageText] = useState('');
   const [activeTab, setActiveTab] = useState('chats');
-
-  const chats: Chat[] = [
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterTab, setFilterTab] = useState('chats');
+  
+  const [chats, setChats] = useState<Chat[]>([
     { id: 1, name: 'Алексей Смирнов', avatar: '', lastMessage: 'Отлично, встречаемся завтра!', time: '14:32', unread: 2, online: true, type: 'personal' },
     { id: 2, name: 'Команда Разработки', avatar: '', lastMessage: 'Релиз запланирован на пятницу', time: '13:15', unread: 5, online: false, type: 'group' },
     { id: 3, name: 'Мария Иванова', avatar: '', lastMessage: 'Спасибо за помощь! 🙏', time: '12:48', unread: 0, online: true, type: 'personal' },
     { id: 4, name: 'Tech News', avatar: '', lastMessage: 'Новые технологии ИИ в 2026', time: '11:20', unread: 0, online: false, type: 'channel' },
     { id: 5, name: 'Дизайн Комьюнити', avatar: '', lastMessage: 'Кто-нибудь работал с Figma?', time: 'вчера', unread: 12, online: false, type: 'group' },
-  ];
+  ]);
 
-  const messages: Message[] = selectedChat ? [
-    { id: 1, text: 'Привет! Как дела?', time: '14:20', sent: false, read: true },
-    { id: 2, text: 'Здорово! Работаю над новым проектом', time: '14:25', sent: true, read: true },
-    { id: 3, text: 'Интересно! Расскажешь подробнее?', time: '14:28', sent: false, read: true },
-    { id: 4, text: 'Да, конечно! Создаю мессенджер с ИИ', time: '14:30', sent: true, read: true },
-    { id: 5, text: 'Отлично, встречаемся завтра!', time: '14:32', sent: false, read: true },
-  ] : [];
+  const [chatMessages, setChatMessages] = useState<Record<number, Message[]>>({
+    1: [
+      { id: 1, text: 'Привет! Как дела?', time: '14:20', sent: false, read: true },
+      { id: 2, text: 'Здорово! Работаю над новым проектом', time: '14:25', sent: true, read: true },
+      { id: 3, text: 'Интересно! Расскажешь подробнее?', time: '14:28', sent: false, read: true },
+      { id: 4, text: 'Да, конечно! Создаю мессенджер с ИИ', time: '14:30', sent: true, read: true },
+      { id: 5, text: 'Отлично, встречаемся завтра!', time: '14:32', sent: false, read: true },
+    ],
+    2: [
+      { id: 1, text: 'Всем привет! Как продвигается проект?', time: '12:00', sent: false, read: true },
+      { id: 2, text: 'Отлично! Уже на финальной стадии', time: '12:30', sent: true, read: true },
+      { id: 3, text: 'Релиз запланирован на пятницу', time: '13:15', sent: false, read: true },
+    ],
+    3: [
+      { id: 1, text: 'Можешь помочь с задачей?', time: '12:30', sent: false, read: true },
+      { id: 2, text: 'Конечно! Что нужно?', time: '12:35', sent: true, read: true },
+      { id: 3, text: 'Спасибо за помощь! 🙏', time: '12:48', sent: false, read: true },
+    ],
+    4: [
+      { id: 1, text: 'Новые технологии ИИ в 2026', time: '11:20', sent: false, read: true },
+    ],
+    5: [
+      { id: 1, text: 'Кто-нибудь работал с Figma?', time: 'вчера', sent: false, read: true },
+    ],
+  });
+
+  const messages: Message[] = selectedChat ? (chatMessages[selectedChat.id] || []) : [];
+  
+  const filteredChats = chats.filter(chat => {
+    const matchesSearch = chat.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          chat.lastMessage.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesFilter = filterTab === 'chats' || 
+                          (filterTab === 'groups' && chat.type === 'group') ||
+                          (filterTab === 'channels' && chat.type === 'channel');
+    return matchesSearch && matchesFilter;
+  });
+
+  const sendMessage = () => {
+    if (!messageText.trim() || !selectedChat) return;
+    
+    const now = new Date();
+    const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+    
+    const newMessage: Message = {
+      id: (chatMessages[selectedChat.id]?.length || 0) + 1,
+      text: messageText,
+      time: time,
+      sent: true,
+      read: false,
+    };
+    
+    setChatMessages(prev => ({
+      ...prev,
+      [selectedChat.id]: [...(prev[selectedChat.id] || []), newMessage]
+    }));
+    
+    setChats(prev => prev.map(chat => 
+      chat.id === selectedChat.id 
+        ? { ...chat, lastMessage: messageText, time: time }
+        : chat
+    ));
+    
+    setMessageText('');
+  };
 
   const getChatIcon = (type: string) => {
     switch(type) {
       case 'group': return 'Users';
       case 'channel': return 'Radio';
       default: return 'User';
+    }
+  };
+  
+  const handleChatSelect = (chat: Chat) => {
+    setSelectedChat(chat);
+    if (chat.unread > 0) {
+      setChats(prev => prev.map(c => 
+        c.id === chat.id ? { ...c, unread: 0 } : c
+      ));
     }
   };
 
@@ -119,24 +187,26 @@ const Index = () => {
             <Icon name="Search" size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input 
               placeholder="Поиск..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-10 rounded-full border-2 focus:border-primary transition-all"
             />
           </div>
         </div>
 
-        <Tabs value={activeTab} className="flex-1 flex flex-col">
+        <Tabs value={filterTab} className="flex-1 flex flex-col">
           <TabsList className="mx-4 mt-2 grid grid-cols-3 bg-muted/50">
-            <TabsTrigger value="chats" onClick={() => setActiveTab('chats')}>Все</TabsTrigger>
-            <TabsTrigger value="groups" onClick={() => setActiveTab('groups')}>Группы</TabsTrigger>
-            <TabsTrigger value="channels" onClick={() => setActiveTab('channels')}>Каналы</TabsTrigger>
+            <TabsTrigger value="chats" onClick={() => setFilterTab('chats')}>Все</TabsTrigger>
+            <TabsTrigger value="groups" onClick={() => setFilterTab('groups')}>Группы</TabsTrigger>
+            <TabsTrigger value="channels" onClick={() => setFilterTab('channels')}>Каналы</TabsTrigger>
           </TabsList>
 
           <ScrollArea className="flex-1">
             <div className="p-2">
-              {chats.map((chat) => (
+              {filteredChats.map((chat) => (
                 <div
                   key={chat.id}
-                  onClick={() => setSelectedChat(chat)}
+                  onClick={() => handleChatSelect(chat)}
                   className={`flex items-center gap-3 p-3 rounded-2xl cursor-pointer transition-all hover:bg-muted/50 mb-1 ${
                     selectedChat?.id === chat.id ? 'glass-dark' : ''
                   }`}
@@ -259,13 +329,13 @@ const Index = () => {
                   className="flex-1 rounded-full border-2 focus:border-primary transition-all"
                   onKeyPress={(e) => {
                     if (e.key === 'Enter' && messageText.trim()) {
-                      setMessageText('');
+                      sendMessage();
                     }
                   }}
                 />
                 
                 {messageText.trim() ? (
-                  <Button size="icon" className="rounded-full gradient-primary text-white hover:opacity-90 shrink-0">
+                  <Button size="icon" onClick={sendMessage} className="rounded-full gradient-primary text-white hover:opacity-90 shrink-0">
                     <Icon name="Send" size={20} />
                   </Button>
                 ) : (
