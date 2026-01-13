@@ -6,6 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import Icon from '@/components/ui/icon';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { VideoCall } from './VideoCall';
 
 interface Call {
   id: number;
@@ -65,7 +66,19 @@ export const Calls = ({ onBack }: CallsProps) => {
     setActiveCall(null);
   };
 
-  if (activeCall) {
+  if (activeCall && activeCall.callType === 'video') {
+    return (
+      <VideoCall 
+        participant={{
+          name: activeCall.name,
+          avatar: activeCall.avatar
+        }}
+        onEnd={endCall}
+      />
+    );
+  }
+
+  if (activeCall && activeCall.callType === 'voice') {
     return (
       <div className="flex h-screen bg-gradient-to-br from-purple-900 via-purple-700 to-pink-600 items-center justify-center">
         <div className="text-center space-y-8 animate-fade-in">
@@ -78,9 +91,7 @@ export const Calls = ({ onBack }: CallsProps) => {
           
           <div className="space-y-2">
             <h2 className="text-4xl font-bold text-white">{activeCall.name}</h2>
-            <p className="text-xl text-white/80">
-              {activeCall.callType === 'video' ? 'Видеозвонок' : 'Голосовой вызов'}
-            </p>
+            <p className="text-xl text-white/80">Голосовой вызов</p>
             <p className="text-lg text-white/60">00:00</p>
           </div>
 
@@ -92,16 +103,6 @@ export const Calls = ({ onBack }: CallsProps) => {
             >
               <Icon name="Mic" size={28} />
             </Button>
-            
-            {activeCall.callType === 'video' && (
-              <Button
-                size="icon"
-                variant="ghost"
-                className="w-16 h-16 rounded-full bg-white/20 hover:bg-white/30 text-white"
-              >
-                <Icon name="Video" size={28} />
-              </Button>
-            )}
             
             <Button
               size="icon"
