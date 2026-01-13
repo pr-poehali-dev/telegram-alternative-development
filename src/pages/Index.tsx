@@ -10,11 +10,13 @@ import { Auth } from '@/components/Auth';
 import { Settings } from '@/components/Settings';
 import { Calls } from '@/components/Calls';
 import { Bots } from '@/components/Bots';
+import { Premium } from '@/components/Premium';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Drawer, DrawerContent, DrawerHeader, DrawerTitle } from '@/components/ui/drawer';
 import { Textarea } from '@/components/ui/textarea';
 import { useTheme } from '@/lib/theme-provider';
+import { useToast } from '@/hooks/use-toast';
 
 interface Chat {
   id: number;
@@ -53,6 +55,7 @@ interface User {
 
 const Index = () => {
   const { theme, setTheme } = useTheme();
+  const { toast } = useToast();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [user, setUser] = useState<{ name: string; email: string; isPremium: boolean } | null>(null);
   const [selectedChat, setSelectedChat] = useState<Chat | null>(null);
@@ -68,6 +71,10 @@ const Index = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const [editingMessage, setEditingMessage] = useState<Message | null>(null);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [newGroupDesc, setNewGroupDesc] = useState('');
+  const [newChannelName, setNewChannelName] = useState('');
+  const [newChannelDesc, setNewChannelDesc] = useState('');
   
   const isDarkMode = theme === 'dark';
   
@@ -156,6 +163,10 @@ const Index = () => {
         )
       }));
       setEditingMessage(null);
+      toast({
+        title: 'Сообщение изменено',
+        duration: 2000,
+      });
     } else {
       const newMessage: Message = {
         id: (chatMessages[selectedChat.id]?.length || 0) + 1,
@@ -177,6 +188,10 @@ const Index = () => {
           : chat
       ));
       setReplyingTo(null);
+      toast({
+        title: 'Сообщение отправлено',
+        duration: 2000,
+      });
     }
     
     setMessageText('');
@@ -188,6 +203,10 @@ const Index = () => {
       ...prev,
       [selectedChat.id]: prev[selectedChat.id].filter(msg => msg.id !== messageId)
     }));
+    toast({
+      title: 'Сообщение удалено',
+      duration: 2000,
+    });
   };
 
   const forwardMessage = (message: Message) => {
@@ -195,13 +214,22 @@ const Index = () => {
   };
 
   const pinChat = (chatId: number) => {
+    const chat = chats.find(c => c.id === chatId);
     setChats(prev => prev.map(chat => 
       chat.id === chatId ? { ...chat, pinned: !chat.pinned } : chat
     ));
+    toast({
+      title: chat?.pinned ? 'Чат откреплен' : 'Чат закреплен',
+      duration: 2000,
+    });
   };
 
   const muteChat = (chatId: number) => {
-    console.log('Muting chat:', chatId);
+    toast({
+      title: 'Уведомления выключены',
+      description: 'Вы больше не будете получать уведомления от этого чата',
+      duration: 2000,
+    });
   };
 
   const deleteChat = (chatId: number) => {
@@ -209,6 +237,11 @@ const Index = () => {
     if (selectedChat?.id === chatId) {
       setSelectedChat(null);
     }
+    toast({
+      title: 'Чат удален',
+      variant: 'destructive',
+      duration: 2000,
+    });
   };
 
   const getChatIcon = (type: string) => {
@@ -240,10 +273,66 @@ const Index = () => {
     setActiveTab('chats');
   };
 
-  const handleUpgradePremium = () => {
+  const handleUpgradePremium = (plan: string) => {
     if (user) {
       setUser({ ...user, isPremium: true });
+      setActiveTab('chats');
+      toast({
+        title: 'Поздравляем! 🎉',
+        description: 'Premium подписка успешно активирована',
+        duration: 4000,
+      });
     }
+  };
+
+  const createGroup = () => {
+    if (!newGroupName.trim()) return;
+    const newGroup: Chat = {
+      id: Date.now(),
+      name: newGroupName,
+      avatar: '',
+      lastMessage: newGroupDesc || 'Группа создана',
+      time: 'сейчас',
+      unread: 0,
+      online: false,
+      type: 'group',
+    };
+    setChats(prev => [newGroup, ...prev]);
+    setChatMessages(prev => ({ ...prev, [newGroup.id]: [] }));
+    setShowNewGroup(false);
+    setNewGroupName('');
+    setNewGroupDesc('');
+    handleChatSelect(newGroup);
+    toast({
+      title: 'Группа создана',
+      description: `Группа "${newGroupName}" успешно создана`,
+      duration: 3000,
+    });
+  };
+
+  const createChannel = () => {
+    if (!newChannelName.trim()) return;
+    const newChannel: Chat = {
+      id: Date.now(),
+      name: newChannelName,
+      avatar: '',
+      lastMessage: newChannelDesc || 'Канал создан',
+      time: 'сейчас',
+      unread: 0,
+      online: false,
+      type: 'channel',
+    };
+    setChats(prev => [newChannel, ...prev]);
+    setChatMessages(prev => ({ ...prev, [newChannel.id]: [] }));
+    setShowNewChannel(false);
+    setNewChannelName('');
+    setNewChannelDesc('');
+    handleChatSelect(newChannel);
+    toast({
+      title: 'Канал создан',
+      description: `Канал "${newChannelName}" успешно создан`,
+      duration: 3000,
+    });
   };
 
   const startChatWithUser = (selectedUser: User) => {
@@ -289,7 +378,17 @@ const Index = () => {
         user={user} 
         onBack={() => setActiveTab('chats')} 
         onLogout={handleLogout}
-        onUpgradePremium={handleUpgradePremium}
+        onOpenPremium={() => setActiveTab('premium')}
+      />
+    );
+  }
+
+  if (activeTab === 'premium') {
+    return (
+      <Premium 
+        onBack={() => setActiveTab('chats')}
+        onUpgrade={handleUpgradePremium}
+        isPremium={user.isPremium}
       />
     );
   }
@@ -984,9 +1083,23 @@ const Index = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <Input placeholder="Название группы" className="rounded-xl" />
-            <Textarea placeholder="Описание (необязательно)" className="rounded-xl" />
-            <Button className="w-full gradient-primary text-white rounded-xl">
+            <Input 
+              placeholder="Название группы" 
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+              className="rounded-xl" 
+            />
+            <Textarea 
+              placeholder="Описание (необязательно)" 
+              value={newGroupDesc}
+              onChange={(e) => setNewGroupDesc(e.target.value)}
+              className="rounded-xl" 
+            />
+            <Button 
+              onClick={createGroup}
+              disabled={!newGroupName.trim()}
+              className="w-full gradient-primary text-white rounded-xl"
+            >
               Создать группу
             </Button>
           </div>
@@ -1003,9 +1116,23 @@ const Index = () => {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <Input placeholder="Название канала" className="rounded-xl" />
-            <Textarea placeholder="Описание канала" className="rounded-xl" />
-            <Button className="w-full gradient-primary text-white rounded-xl">
+            <Input 
+              placeholder="Название канала" 
+              value={newChannelName}
+              onChange={(e) => setNewChannelName(e.target.value)}
+              className="rounded-xl" 
+            />
+            <Textarea 
+              placeholder="Описание канала" 
+              value={newChannelDesc}
+              onChange={(e) => setNewChannelDesc(e.target.value)}
+              className="rounded-xl" 
+            />
+            <Button 
+              onClick={createChannel}
+              disabled={!newChannelName.trim()}
+              className="w-full gradient-primary text-white rounded-xl"
+            >
               Создать канал
             </Button>
           </div>

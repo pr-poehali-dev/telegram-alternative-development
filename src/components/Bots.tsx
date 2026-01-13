@@ -19,11 +19,20 @@ interface Bot {
 
 interface BotsProps {
   onBack: () => void;
+  onAddBot?: (bot: Bot) => void;
 }
 
-export const Bots = ({ onBack }: BotsProps) => {
+export const Bots = ({ onBack, onAddBot }: BotsProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [addedBots, setAddedBots] = useState<number[]>([]);
+
+  const handleAddBot = (bot: Bot) => {
+    setAddedBots(prev => [...prev, bot.id]);
+    if (onAddBot) {
+      onAddBot(bot);
+    }
+  };
 
   const bots: Bot[] = [
     { id: 1, name: 'ChatGPT', description: 'ИИ-ассистент для ответов на вопросы', category: 'ai', users: '5M+', rating: 4.9, verified: true },
@@ -136,10 +145,23 @@ export const Bots = ({ onBack }: BotsProps) => {
                         </div>
                       </div>
                     </div>
-                    <Button className="w-full gradient-primary text-white hover:opacity-90 rounded-xl group-hover:scale-105 transition-transform">
-                      <Icon name="Plus" size={16} className="mr-2" />
-                      Добавить
-                    </Button>
+                    {addedBots.includes(bot.id) ? (
+                      <Button 
+                        className="w-full bg-green-500 text-white rounded-xl cursor-default"
+                        disabled
+                      >
+                        <Icon name="Check" size={16} className="mr-2" />
+                        Добавлен
+                      </Button>
+                    ) : (
+                      <Button 
+                        onClick={() => handleAddBot(bot)}
+                        className="w-full gradient-primary text-white hover:opacity-90 rounded-xl group-hover:scale-105 transition-transform"
+                      >
+                        <Icon name="Plus" size={16} className="mr-2" />
+                        Добавить
+                      </Button>
+                    )}
                   </CardContent>
                 </Card>
               ))}

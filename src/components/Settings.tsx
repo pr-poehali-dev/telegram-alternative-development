@@ -15,10 +15,10 @@ interface SettingsProps {
   user: { name: string; email: string; isPremium: boolean };
   onBack: () => void;
   onLogout: () => void;
-  onUpgradePremium: () => void;
+  onOpenPremium: () => void;
 }
 
-export const Settings = ({ user, onBack, onLogout, onUpgradePremium }: SettingsProps) => {
+export const Settings = ({ user, onBack, onLogout, onOpenPremium }: SettingsProps) => {
   const { theme, setTheme } = useTheme();
   const [notifications, setNotifications] = useState(true);
   const [soundEnabled, setSoundEnabled] = useState(true);
@@ -103,7 +103,7 @@ export const Settings = ({ user, onBack, onLogout, onUpgradePremium }: SettingsP
                 </CardHeader>
                 <CardContent>
                   <Button 
-                    onClick={onUpgradePremium}
+                    onClick={onOpenPremium}
                     className="w-full bg-white text-primary hover:bg-white/90 rounded-xl h-10 md:h-11 font-semibold text-sm md:text-base"
                   >
                     Получить Premium за 299₽/мес

@@ -26,6 +26,9 @@ export const Calls = ({ onBack }: CallsProps) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState('all');
   const [activeCall, setActiveCall] = useState<Call | null>(null);
+  const [callDuration, setCallDuration] = useState(0);
+  const [isMuted, setIsMuted] = useState(false);
+  const [isSpeaker, setIsSpeaker] = useState(false);
 
   const calls: Call[] = [
     { id: 1, name: 'Алексей Смирнов', avatar: '', type: 'incoming', callType: 'video', time: '14:32', duration: '12:34' },
@@ -60,10 +63,27 @@ export const Calls = ({ onBack }: CallsProps) => {
 
   const startCall = (call: Call, isVideo: boolean) => {
     setActiveCall({ ...call, callType: isVideo ? 'video' : 'voice' });
+    setCallDuration(0);
+    const interval = setInterval(() => {
+      setCallDuration(prev => prev + 1);
+    }, 1000);
+    (window as any).callInterval = interval;
   };
 
   const endCall = () => {
+    if ((window as any).callInterval) {
+      clearInterval((window as any).callInterval);
+    }
     setActiveCall(null);
+    setCallDuration(0);
+    setIsMuted(false);
+    setIsSpeaker(false);
+  };
+
+  const formatDuration = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
   if (activeCall && activeCall.callType === 'video') {
@@ -92,16 +112,17 @@ export const Calls = ({ onBack }: CallsProps) => {
           <div className="space-y-2">
             <h2 className="text-4xl font-bold text-white">{activeCall.name}</h2>
             <p className="text-xl text-white/80">Голосовой вызов</p>
-            <p className="text-lg text-white/60">00:00</p>
+            <p className="text-lg text-white/60">{formatDuration(callDuration)}</p>
           </div>
 
           <div className="flex items-center justify-center gap-6">
             <Button
               size="icon"
               variant="ghost"
-              className="w-16 h-16 rounded-full bg-white/20 hover:bg-white/30 text-white"
+              onClick={() => setIsMuted(!isMuted)}
+              className={`w-16 h-16 rounded-full ${isMuted ? 'bg-red-500/80' : 'bg-white/20'} hover:bg-white/30 text-white`}
             >
-              <Icon name="Mic" size={28} />
+              <Icon name={isMuted ? "MicOff" : "Mic"} size={28} />
             </Button>
             
             <Button
@@ -115,9 +136,10 @@ export const Calls = ({ onBack }: CallsProps) => {
             <Button
               size="icon"
               variant="ghost"
-              className="w-16 h-16 rounded-full bg-white/20 hover:bg-white/30 text-white"
+              onClick={() => setIsSpeaker(!isSpeaker)}
+              className={`w-16 h-16 rounded-full ${isSpeaker ? 'bg-green-500/80' : 'bg-white/20'} hover:bg-white/30 text-white`}
             >
-              <Icon name="Volume2" size={28} />
+              <Icon name={isSpeaker ? "Volume2" : "Volume1"} size={28} />
             </Button>
           </div>
         </div>
